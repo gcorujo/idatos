@@ -18,14 +18,13 @@ class Pelicula(Resource):
         
         #Se obtiene la informacion de la pelicula desde IMDB
         infoPeliculasIMDB = imdb.search(query)
-        #peliculaIMDB = imdb.get_by_id("tt2283362")
         #Se convierte el string json para poder manejarlo como un diccionario
         infoPeliculasIMDB  = json.loads(infoPeliculasIMDB)
         
         #if (infoPeliculasIMDB['result_count'] > 0):
-        listaPeliculasIMDB = infoPeliculasIMDB['results']
+            #listaPeliculasIMDB = infoPeliculasIMDB['results']
 
-        #pelicula = listaPeliculasIMDB[1]
+        #pelicula = listaPeliculasIMDB[1] No funciona asi
         #print("test" + str(pelicula), flush=True) 
             
 
@@ -34,7 +33,7 @@ class Pelicula(Resource):
         movie_scraper.extract_metadata()
         peliculaRT = movie_scraper.metadata
         
-        return {'data': {'peliculaIMDB': listaPeliculasIMDB, 'peliculaRT': peliculaRT}}, 200 
+        return {'data': {'peliculaIMDB': infoPeliculasIMDB, 'peliculaRT': peliculaRT}}, 200 
 
 api.add_resource(Pelicula,'/pelicula')
 
