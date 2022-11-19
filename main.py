@@ -14,14 +14,14 @@ api = Api(app)
 class Pelicula(Resource):
     #Se agregan los metodos aca
     def get(self):
-        query = request.args.get('buscar')
+        query = request.args.get('buscar').lower()
         
         moviesTitleIMDB = []
         indice = 0
         with open('imdb_top_1000.csv','rt') as dataset:
             data = csv.reader(dataset)
             for movie in data:
-                moviesTitleIMDB.append(movie[1])
+                moviesTitleIMDB.append(movie[1].lower())
         dataset.close() 
 
         titlesMap = {}
@@ -30,6 +30,9 @@ class Pelicula(Resource):
         
         #Se busca los nombres de las peliculas que matchean mejor con la query
         titlesMatchesIMDB = difflib.get_close_matches(query,titlesMap.keys())
+        if (len(titlesMatchesIMDB) == 0):
+            return {'Error': 'Movie ' + query + ' not found'}, 404
+
         titleIMDB = titlesMatchesIMDB[0]
         indicePeliculaElegida = titlesMap[titleIMDB]
         print(indicePeliculaElegida)
@@ -46,6 +49,7 @@ class Pelicula(Resource):
         yearIMDB = infoPelicula[2]
         genresIMDB = infoPelicula[5]
         scoreIMDB = infoPelicula[6]
+        descriptionIMDB = infoPelicula[7]
         directorIMDB = infoPelicula[9]
 
         #Se busca en el web scrapper de RT todas las peliculas que hizo el director
@@ -56,7 +60,6 @@ class Pelicula(Resource):
         
         #Se matchea la lista de peliculas del director con el nombre de la pelicula del dataset de IMDB
         titlesMatchesRT = difflib.get_close_matches(titleIMDB, moviesTitleRT)
-        #titleMovieRT = titlesMatchesRT[0] 
        
         movieTitleRT = ''
         for titleMovieRT in titlesMatchesRT:
@@ -76,12 +79,17 @@ class Pelicula(Resource):
         genresRT = movie_scraper.metadata['Genre']
        
         #Integracion de Generos 
+        genres = genresIMDB.split(', ')
         for genre in genresRT:
-            if (genre == 'Mystery&thriller'):
-                print('Encontro el genero')
+           aux = genre.split('&')
+           genres = genres + aux
+        genres = list(dict.fromkeys(map(str.capitalize,genres)))
+        
+        #Integracion de Scores
+        score = (float(scoreIMDB) + (float(scoreRT)/10) + (float(scoreAudienceRT)/10) ) / 3
+        score = float('%.2f'%(score)) 
 
-
-        return {'data': {'IMDB': { 'titleIMDB': titleIMDB, 'scoreIMDB': scoreIMDB, 'directorIMDB': directorIMDB, 'yearIMDB': yearIMDB, 'genresIMDB': genresIMDB}, 'RottenTomates': {'titleRT': titleMovieRT, 'scoreRT': scoreRT, 'scoreAudienceRT': scoreAudienceRT, 'genresRT': genresRT} } }, 200 
+        return {'data': {'IMDB': { 'titleIMDB': titleIMDB, 'scoreIMDB': scoreIMDB, 'description': descriptionIMDB, 'directorIMDB': directorIMDB, 'yearIMDB': yearIMDB, 'genresIMDB': genresIMDB}, 'RottenTomates': {'titleRT': titleMovieRT, 'scoreRT': scoreRT, 'scoreAudienceRT': scoreAudienceRT, 'genresRT': genresRT}, 'IntegracionDatos': {'title': movieTitleRT, 'score': score, 'description': descriptionIMDB, 'director': directorIMDB, 'year': yearIMDB, 'genres': genres} } }, 200 
 
 api.add_resource(Pelicula,'/pelicula')
 
