@@ -31,7 +31,7 @@ class Pelicula(Resource):
         #Se busca los nombres de las peliculas que matchean mejor con la query
         titlesMatchesIMDB = difflib.get_close_matches(query,titlesMap.keys())
         if (len(titlesMatchesIMDB) == 0):
-            return {'Error': 'Movie ' + query + ' not found'}, 404
+            return {'Error': 'Movie ' + query + ' not found in IMDB Dataset'}, 404
 
         titleIMDB = titlesMatchesIMDB[0]
         indicePeliculaElegida = titlesMap[titleIMDB]
@@ -52,7 +52,7 @@ class Pelicula(Resource):
         descriptionIMDB = infoPelicula[7]
         directorIMDB = infoPelicula[9]
 
-        #Se busca en el web scrapper de RT todas las peliculas que hizo el director
+        #Se busca en el web scraper de RT todas las peliculas que hizo el director
         director_scraper = DirectorScraper(director_name=directorIMDB)
         director_scraper.extract_metadata()
         moviesTitleRT = list(director_scraper.metadata.keys())
@@ -70,7 +70,10 @@ class Pelicula(Resource):
             if yearRT == yearIMDB:
                 movieTitleRT = titleMovieRT
                 break
-        
+
+        if movieTitleRT == '':
+             return {'Error': 'Movie ' + query + ' not found in Rotten Tomatoes'}, 404
+
         movie_scraper = MovieScraper(movie_title=movieTitleRT)
         movie_scraper.extract_metadata()     
        
