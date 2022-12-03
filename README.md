@@ -1,6 +1,6 @@
 # idatos
 
-Instalar con pip3 el modulo Flask y falsk-restful
+Instalar con pip3 el modulo Flask y flask-restful
 
 pip3 install Flask
 pip3 install flask-restful
